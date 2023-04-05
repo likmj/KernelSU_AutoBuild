@@ -1,0 +1,123 @@
+name: Build Kernel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Configuration
+        run: |
+          echo "KERNEL_SOURCE=TheVoyager0777/Kernel_Xiaomi_SM8150_R" >> $GITHUB_ENV
+          echo "KERNEL_SOURCE_BRANCH=VK-VI" >> $GITHUB_ENV
+          echo "KERNEL_DEFCONFIG=raphael_defconfig" >> $GITHUB_ENV
+          echo "TARGET_ARCH=arm64" >> $GITHUB_ENV
+          echo "KERNEL_FILE=Image-dtb" >> $GITHUB_ENV
+          echo "CLANG_URL=https://github.com/kdrag0n/proton-clang/archive/refs/tags/20210522.tar.gz" >> $GITHUB_ENV
+ 
+      - name: Setup build kernel environment
+        run: |
+          echo "BUILD_TIME=$(TZ=Asia/Shanghai date "+%Y%m%d%H%M")" >> $GITHUB_ENV
+          echo "DEVICE=$(echo ${{ env.KERNEL_DEFCONFIG }} | sed 's!vendor/!!;s/_defconfig//;s/_user//;s/-perf//')" >> $GITHUB_ENV
+          sudo apt-get update
+          sudo apt-get install git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python2 python3
+
+      - name: Download Clang Toolchain
+        run: |
+          mkdir clang
+          wget -q ${{ env.CLANG_URL }} -O clang.tar.gz
+          tar -C clang/ -zxf clang.tar.gz
+        
+      - name: Checkout Kernel Source
+        uses: actions/checkout@v3
+        with:
+          github-server-url: 'https://github.com'
+          repository: ${{ env.KERNEL_SOURCE }}
+          ref: ${{ env.KERNEL_SOURCE_BRANCH }}
+          submodules: recursive
+          path: android-kernel
+
+      - name: Setup KernelSU
+        run: |
+          cd android-kernel
+          git apply ../patch/KernelSU.patch
+          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+          echo "UPLOADNAME=-KernelSU" >> $GITHUB_ENV
+
+      - name: Generate kernel configuration
+        run: |
+          cd android-kernel
+          export PATH=$GITHUB_WORKSPACE/clang/proton-clang-20210522/bin:$PATH
+          export ARCH=${{ env.TARGET_ARCH }}
+          export SUBARCH=${{ env.TARGET_ARCH }}
+          export KBUILD_COMPILER_STRING="$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+          export KBUILD_BUILD_HOST=GitHub-Action
+          export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
+          make -j$(nproc --all) O=out ARCH=${{ env.TARGET_ARCH }} CC=clang ${{ env.KERNEL_DEFCONFIG }}
+
+      - name: Build kernel
+        run: |
+          cd android-kernel
+          export PATH=$GITHUB_WORKSPACE/clang/proton-clang-20210522/bin:$PATH
+          export ARCH=${{ env.TARGET_ARCH }}
+          export SUBARCH=${{ env.TARGET_ARCH }}
+          export KBUILD_COMPILER_STRING="$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+          export KBUILD_BUILD_HOST=GitHub-Action
+          export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
+          make -j$(nproc --all) O=out ARCH=arm64 savedefconfig
+          cp -f out/defconfig arch/${{ env.TARGET_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG }}
+          make -j$(nproc --all) O=out ARCH=${{ env.TARGET_ARCH }} CC=clang CROSS_COMPILE=aarch64-linux-gnu-
+          
+      - name: Check the kernel output files
+        run: |
+          if [ -f android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/${{ env.KERNEL_FILE }} ] ; then
+              echo "CHECK_KERNEL_FILE_IS_OK=true" >> $GITHUB_ENV
+          else
+              echo "Kernel output file is empty"
+          fi
+          if [ -f android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/dtbo.img ] ; then
+              echo "CHECK_DTBO_IS_OK=true" >> $GITHUB_ENV
+          else
+              echo "DTBO image is empty"
+          fi
+        
+      - name: Upload the kernel image
+        if: env.CHECK_KERNEL_FILE_IS_OK == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.KERNEL_FILE }}${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+          path: android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/${{ env.KERNEL_FILE }}
+
+      - name: Upload DTBO image
+        if: env.CHECK_DTBO_IS_OK == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: dtbo-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+          path: android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/dtbo.img
+          
+      - name: Checkout TheVoyager0777/AnyKernel3
+        uses: actions/checkout@v3
+        with:
+          repository: TheVoyager0777/AnyKernel3
+          ref: kona
+          path: AnyKernel3
+
+      - name: Make Anykernel for the kernel
+        run: |
+          cd AnyKernel3
+          git apply ../patch/Anykernel3.patch
+          if [ ${{ env.CHECK_KERNEL_FILE_IS_OK }} = true ] ; then
+              cp -fp ../android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/${{ env.KERNEL_FILE }} ./
+          fi
+          rm -rf .git* modules patch ramdisk
+          
+      - name: Upload AnyKernel3
+        if: env.CHECK_KERNEL_FILE_IS_OK == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: AnyKernel3${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+          path: AnyKernel3/*
