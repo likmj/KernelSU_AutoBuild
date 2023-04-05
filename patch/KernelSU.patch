@@ -1,0 +1,142 @@
+From 56b68ed09515d2fae9550cbf7c161a7abac5e49a Mon Sep 17 00:00:00 2001
+From: Yincircle <yinheng304@gmail.com>
+Date: Wed, 5 Apr 2023 23:46:32 +0800
+Subject: [PATCH] update kernelsu
+
+---
+ drivers/Makefile | 2 --
+ drivers/kernelsu | 1 -
+ fs/exec.c        | 4 ----
+ fs/open.c        | 7 +------
+ fs/read_write.c  | 4 ----
+ fs/stat.c        | 4 ----
+ 6 files changed, 1 insertion(+), 21 deletions(-)
+ delete mode 120000 drivers/kernelsu
+
+diff --git a/drivers/Makefile b/drivers/Makefile
+index babee8f6b..a77b3e711 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -193,5 +193,3 @@ obj-$(CONFIG_GNSS_SIRF)		+= gnsssirf/
+ obj-$(CONFIG_GNSS)		+= gnss/
+ 
+ obj-$(CONFIG_MIHW)		+= mihw/
+-
+-obj-$(CONFIG_KSU)		+= kernelsu/
+diff --git a/drivers/kernelsu b/drivers/kernelsu
+deleted file mode 120000
+index e10c197fd..000000000
+--- a/drivers/kernelsu
++++ /dev/null
+@@ -1 +0,0 @@
+-../../KernelSU/kernel/
+\ No newline at end of file
+diff --git a/fs/exec.c b/fs/exec.c
+index d56de558e..691a453f4 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1714,10 +1714,8 @@ static int exec_binprm(struct linux_binprm *bprm)
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_KSU
+ extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
+ 			void *envp, int *flags);
+-#endif
+ 
+ /*
+  * sys_execve() executes a new program.
+@@ -1733,9 +1731,7 @@ static int do_execveat_common(int fd, struct filename *filename,
+ 	struct files_struct *displaced;
+ 	int retval;
+ 
+-#ifdef CONFIG_KSU
+ 	ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
+-#endif
+ 
+ 	if (IS_ERR(filename))
+ 		return PTR_ERR(filename);
+diff --git a/fs/open.c b/fs/open.c
+index 0fd8d2665..a2dfc0b89 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -354,10 +354,8 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
+ 	return error;
+ }
+ 
+-#ifdef CONFIG_KSU
+ extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
+ 			 int *flags);
+-#endif
+ 
+ /*
+  * access() needs to use the real uid/gid, not the effective uid/gid.
+@@ -366,6 +364,7 @@ extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int
+  */
+ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
+ {
++	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
+ 	const struct cred *old_cred;
+ 	struct cred *override_cred;
+ 	struct path path;
+@@ -374,10 +373,6 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
+ 	int res;
+ 	unsigned int lookup_flags = LOOKUP_FOLLOW;
+ 
+-#ifdef CONFIG_KSU
+-	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
+-#endif
+-
+ 	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
+ 		return -EINVAL;
+ 
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 757c7c3fc..ad8020d81 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -429,18 +429,14 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
+ }
+ EXPORT_SYMBOL(kernel_read);
+ 
+-#ifdef CONFIG_KSU
+ extern int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
+ 			size_t *count_ptr, loff_t **pos);
+-#endif
+ 
+ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
+ {
+ 	ssize_t ret;
+ 
+-#ifdef CONFIG_KSU
+ 	ksu_handle_vfs_read(&file, &buf, &count, &pos);
+-#endif
+ 
+ 	if (!(file->f_mode & FMODE_READ))
+ 		return -EBADF;
+diff --git a/fs/stat.c b/fs/stat.c
+index 9d4df99b6..585a0bfcd 100644
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -148,9 +148,7 @@ int vfs_statx_fd(unsigned int fd, struct kstat *stat,
+ }
+ EXPORT_SYMBOL(vfs_statx_fd);
+ 
+-#ifdef CONFIG_KSU
+ extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
+-#endif
+ 
+ /**
+  * vfs_statx - Get basic and extra attributes by filename
+@@ -174,9 +172,7 @@ int vfs_statx(int dfd, const char __user *filename, int flags,
+ 	int error = -EINVAL;
+ 	unsigned int lookup_flags = LOOKUP_FOLLOW | LOOKUP_AUTOMOUNT;
+ 
+-#ifdef CONFIG_KSU
+ 	ksu_handle_stat(&dfd, &filename, &flags);
+-#endif
+ 
+ 	if ((flags & ~(AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT |
+ 		       AT_EMPTY_PATH | KSTAT_QUERY_FLAGS)) != 0)
+-- 
+2.25.1
+

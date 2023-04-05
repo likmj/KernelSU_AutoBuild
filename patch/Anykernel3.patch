@@ -1,0 +1,35 @@
+From af47532ef8c866c1fba5aaea1f8e441c25b61977 Mon Sep 17 00:00:00 2001
+From: Yincircle <yinheng304@gmail.com>
+Date: Wed, 5 Apr 2023 22:17:38 +0800
+Subject: [PATCH] update Anykernel3
+
+---
+ anykernel.sh | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/anykernel.sh b/anykernel.sh
+index 5437b3c..27b6a80 100755
+--- a/anykernel.sh
++++ b/anykernel.sh
+@@ -39,17 +39,10 @@ case "$userflavor" in
+     missi_phoneext4_cn-user) os="miui"; os_string="MIUI ROM";;
+     missi_phone_cn-user) os="miui"; os_string="MIUI ROM";;
+     qssi-user) os="miui"; os_string="MIUI ROM";;
++    raphael-user) os="miui"; os_string="MIUI ROM";;
+     *) os="aosp"; os_string="AOSP ROM";;
+ esac;
+ ui_print "  -> $os_string is detected!";
+-if [ -f $home/kernels/$os/Image ] && [ -f $home/kernels/$os/dtb ] && [ -f $home/kernels/$os/dtbo.img ]; then
+-    mv $home/kernels/$os/Image $home/Image;
+-    mv $home/kernels/$os/dtb $home/dtb;
+-    mv $home/kernels/$os/dtbo.img $home/dtbo.img;
+-else
+-    ui_print "  -> There is no kernel for your OS in this zip! Aborting...";
+-    exit 1;
+-fi;
+ 
+ ## AnyKernel boot install
+ split_boot;
+-- 
+2.25.1
+
