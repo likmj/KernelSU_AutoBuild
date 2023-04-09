@@ -47,6 +47,8 @@ jobs:
           git apply ../patch/KernelSU.patch
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
           echo "UPLOADNAME=-KernelSU" >> $GITHUB_ENV
+          cd KernelSU
+          echo "RELEASE_VERSION=$(($(git rev-list --count HEAD) + 10200))" >> $GITHUB_ENV
 
       - name: Generate kernel configuration
         run: |
@@ -119,5 +121,5 @@ jobs:
         if: env.CHECK_KERNEL_FILE_IS_OK == 'true'
         uses: actions/upload-artifact@v3
         with:
-          name: AnyKernel3${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
+          name: AnyKernel3${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.RELEASE_VERSION }}
           path: AnyKernel3/*
