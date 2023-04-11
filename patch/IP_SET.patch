@@ -1,23 +1,31 @@
-From 68204e6c6f4200f5e86a8e94bed7287f0db1a3c0 Mon Sep 17 00:00:00 2001
+From 67ea1dd0fb238d8989d2510caadff0c2282ce15a Mon Sep 17 00:00:00 2001
 From: Yincircle <yinheng304@gmail.com>
-Date: Tue, 11 Apr 2023 17:17:03 +0800
-Subject: [PATCH] feat IP SET
+Date: Tue, 11 Apr 2023 22:00:45 +0800
+Subject: [PATCH] feat IPSET
 
 ---
- arch/arm64/configs/raphael_defconfig | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/arm64/configs/raphael_defconfig | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
 diff --git a/arch/arm64/configs/raphael_defconfig b/arch/arm64/configs/raphael_defconfig
-index 3709d2f0c..1fa18c4ff 100644
+index 3709d2f0c..ed83cc81a 100644
 --- a/arch/arm64/configs/raphael_defconfig
 +++ b/arch/arm64/configs/raphael_defconfig
-@@ -772,3 +772,22 @@ CONFIG_DAMON=y
+@@ -228,6 +228,7 @@ CONFIG_IP6_NF_FILTER=y
+ CONFIG_IP6_NF_TARGET_REJECT=y
+ CONFIG_IP6_NF_MANGLE=y
+ CONFIG_IP6_NF_RAW=y
++CONFIG_IP6_NF_NAT=y
+ CONFIG_BRIDGE_NF_EBTABLES=y
+ CONFIG_BRIDGE_EBT_BROUTE=y
+ CONFIG_IP_SCTP=y
+@@ -772,3 +773,23 @@ CONFIG_DAMON=y
  CONFIG_DAMON_PADDR=y
  CONFIG_DAMON_SYSFS=y
  CONFIG_DAMON_RECLAIM=y
 +
 +CONFIG_IP_SET=y
-+CONFIG_IP_SET_MAX=65534
++CONFIG_IP_SET_MAX=256
 +CONFIG_IP_SET_BITMAP_IP=y
 +CONFIG_IP_SET_BITMAP_IPMAC=y
 +CONFIG_IP_SET_BITMAP_PORT=y
@@ -34,6 +42,7 @@ index 3709d2f0c..1fa18c4ff 100644
 +CONFIG_IP_SET_HASH_NETPORT=y
 +CONFIG_IP_SET_HASH_NETIFACE=y
 +CONFIG_IP_SET_LIST_SET=y
++CONFIG_NETFILTER_XT_SET=y
 -- 
 2.25.1
 
