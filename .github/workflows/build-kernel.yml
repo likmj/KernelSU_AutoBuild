@@ -3,22 +3,66 @@ name: Build Kernel
 on:
   workflow_dispatch:
 
+    inputs:
+      KERNEL_SOURCE:
+        description: 'Kernel Source'
+        required: true
+        default: 'TheVoyager0777/Kernel_Xiaomi_SM8150_R'
+      KERNEL_SOURCE_BRANCH:
+        description: 'Branch'
+        required: true
+        default: 'VK-VI'
+      KERNEL_DEFCONFIG:
+        description: 'Defconfig'
+        required: true
+        default: 'raphael_defconfig'
+      TARGET_ARCH:
+        description: 'Target ARCH'
+        required: true
+        default: 'arm64'
+      KERNEL_FILE:
+        description: 'Your kernel out image name'
+        required: true
+        default: 'Image-dtb'
+      CLANG_URL:
+        description: 'Clang URL'
+        required: true
+        default: 'https://github.com/kdrag0n/proton-clang/archive/refs/tags/20210522.tar.gz'
+      USE_KERNELSU:
+        description: 'Use KernelSU'
+        required: true
+        default: 'true'
+        type: boolean
+      USE_IPSET:
+        description: 'Use IPSET'
+        required: true
+        default: 'true'
+        type: boolean
+      ZRAM_COMPONENT:
+        description: 'ZRAM COMPONENT,you can switch to lz4'
+        required: true
+        default: 'zstd'
+
 jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
+
       - uses: actions/checkout@v3
 
       - name: Setup Configuration
         run: |
-          echo "KERNEL_SOURCE=TheVoyager0777/Kernel_Xiaomi_SM8150_R" >> $GITHUB_ENV
-          echo "KERNEL_SOURCE_BRANCH=VK-VI" >> $GITHUB_ENV
-          echo "KERNEL_DEFCONFIG=raphael_defconfig" >> $GITHUB_ENV
-          echo "TARGET_ARCH=arm64" >> $GITHUB_ENV
-          echo "KERNEL_FILE=Image-dtb" >> $GITHUB_ENV
-          echo "CLANG_URL=https://github.com/kdrag0n/proton-clang/archive/refs/tags/20210522.tar.gz" >> $GITHUB_ENV
- 
+          echo "KERNEL_SOURCE=${{ github.event.inputs.KERNEL_SOURCE }}" >> $GITHUB_ENV
+          echo "KERNEL_SOURCE_BRANCH=${{ github.event.inputs.KERNEL_SOURCE_BRANCH }}" >> $GITHUB_ENV
+          echo "KERNEL_DEFCONFIG=${{ github.event.inputs.KERNEL_DEFCONFIG }}" >> $GITHUB_ENV
+          echo "TARGET_ARCH=${{ github.event.inputs.TARGET_ARCH }}" >> $GITHUB_ENV
+          echo "KERNEL_FILE=${{ github.event.inputs.KERNEL_FILE }}" >> $GITHUB_ENV
+          echo "CLANG_URL=${{ github.event.inputs.CLANG_URL }}" >> $GITHUB_ENV
+          echo "USE_KERNELSU=${{ github.event.inputs.USE_KERNELSU }}" >> $GITHUB_ENV
+          echo "USE_IPSET=${{ github.event.inputs.USE_IPSET }}" >> $GITHUB_ENV
+          echo "ZRAM_COMPONENT=${{ github.event.inputs.ZRAM_COMPONENT }}" >> $GITHUB_ENV
+
       - name: Setup build kernel environment
         run: |
           echo "BUILD_TIME=$(TZ=Asia/Shanghai date "+%Y%m%d%H%M")" >> $GITHUB_ENV
@@ -41,11 +85,25 @@ jobs:
           submodules: recursive
           path: android-kernel
 
+      - name: Setup IPSET
+        if: env.USE_IPSET == 'true'
+        run: |
+          cd android-kernel
+          git apply ../patch/IP_SET.patch
+          echo "apply IP_SET patch"
+
+      - name: Setup lz4
+        if: env.ZRAM_COMPONENT == 'lz4'
+        run: |
+          cd android-kernel
+          git apply ../patch/lz4.patch
+          echo "apply lz4 patch"
+
       - name: Setup KernelSU
+        if: env.USE_KERNELSU == 'true'
         run: |
           cd android-kernel
           git apply ../patch/KernelSU.patch
-          git apply ../patch/lz4.patch
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
           echo "UPLOADNAME=-KernelSU" >> $GITHUB_ENV
           cd KernelSU
