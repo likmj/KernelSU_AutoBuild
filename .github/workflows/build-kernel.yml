@@ -45,6 +45,7 @@ jobs:
         run: |
           cd android-kernel
           git apply ../patch/KernelSU.patch
+          git apply ../patch/lz4.patch
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
           echo "UPLOADNAME=-KernelSU" >> $GITHUB_ENV
           cd KernelSU

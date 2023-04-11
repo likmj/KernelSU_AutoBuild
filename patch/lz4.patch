@@ -1,0 +1,25 @@
+From 9d141b2e348d9453897f29bc21bf3188f6f0761a Mon Sep 17 00:00:00 2001
+From: Yincircle <yinheng304@gmail.com>
+Date: Tue, 11 Apr 2023 12:20:11 +0800
+Subject: [PATCH] zram: Default lz4
+
+---
+ drivers/block/zram/zram_drv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/block/zram/zram_drv.c b/drivers/block/zram/zram_drv.c
+index 8cb88b6c9..fca0b01fd 100644
+--- a/drivers/block/zram/zram_drv.c
++++ b/drivers/block/zram/zram_drv.c
+@@ -41,7 +41,7 @@ static DEFINE_IDR(zram_index_idr);
+ static DEFINE_MUTEX(zram_index_mutex);
+ 
+ static int zram_major;
+-static const char *default_compressor = "zstd";
++static const char *default_compressor = "lz4";
+ 
+ /* Module params (documentation at end) */
+ static unsigned int num_devices = 1;
+-- 
+2.25.1
+
