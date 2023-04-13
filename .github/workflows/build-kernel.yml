@@ -104,7 +104,7 @@ jobs:
         run: |
           cd android-kernel
           git apply ../patch/KernelSU.patch
-          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main 
           echo "UPLOADNAME=-KernelSU" >> $GITHUB_ENV
           cd KernelSU
           echo "RELEASE_VERSION=$(($(git rev-list --count HEAD) + 10200))" >> $GITHUB_ENV
