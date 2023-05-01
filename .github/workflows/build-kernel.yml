@@ -15,7 +15,7 @@ on:
       KERNEL_DEFCONFIG:
         description: 'Defconfig'
         required: true
-        default: 'raphael_defconfig'
+        default: 'realview_defconfig'
       TARGET_ARCH:
         description: 'Target ARCH'
         required: true
@@ -23,10 +23,10 @@ on:
       KERNEL_FILE:
         description: 'Your kernel out image name'
         required: true
-        default: 'Image-dtb'
+        default: 'Image.gz'
       CLANG_URL:
         description: 'Clang URL'
-        required: true
+        required: false
         default: 'https://github.com/kdrag0n/proton-clang/archive/refs/tags/20210522.tar.gz'
       USE_KERNELSU:
         description: 'Use KernelSU'
