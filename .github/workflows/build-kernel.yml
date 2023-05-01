@@ -7,9 +7,9 @@ on:
       KERNEL_SOURCE:
         description: 'Kernel Source'
         required: true
-        default: 'TheVoyager0777/Kernel_Xiaomi_SM8150_R'
+        default: 'likmj/android_gki_kernel_5.10_common'
       KERNEL_SOURCE_BRANCH:
-        description: 'Branch'
+        description: 'android12-5.10-2022-03'
         required: true
         default: 'VK-VI'
       KERNEL_DEFCONFIG:
