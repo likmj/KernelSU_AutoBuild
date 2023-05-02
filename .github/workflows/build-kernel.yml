@@ -27,7 +27,7 @@ on:
       CLANG_URL:
         description: 'Clang URL'
         required: true
-        default: 'https://github.com/kdrag0n/proton-clang/archive/refs/tags/20210522.tar.gz'
+        default: 'https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-aarch64-linux-gnu.tar.xz'
       USE_KERNELSU:
         description: 'Use KernelSU'
         required: true
