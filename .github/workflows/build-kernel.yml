@@ -35,7 +35,7 @@ on:
         type: boolean
       USE_IPSET:
         description: 'Use IPSET'
-        required: true
+        required: false
         default: 'true'
         type: boolean
       ZRAM_COMPONENT:
