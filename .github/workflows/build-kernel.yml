@@ -15,7 +15,7 @@ on:
       KERNEL_DEFCONFIG:
         description: 'Defconfig'
         required: true
-        default: 'raphael_defconfig'
+        default: 'gki_defconfig'
       TARGET_ARCH:
         description: 'Target ARCH'
         required: true
@@ -23,7 +23,7 @@ on:
       KERNEL_FILE:
         description: 'Your kernel out image name'
         required: true
-        default: 'Image-dtb'
+        default: 'Image.gz'
       CLANG_URL:
         description: 'Clang URL'
         required: true
