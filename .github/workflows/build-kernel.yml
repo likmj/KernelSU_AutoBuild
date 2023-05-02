@@ -9,9 +9,9 @@ on:
         required: true
         default: 'likmj/android_gki_kernel_5.10_common'
       KERNEL_SOURCE_BRANCH:
-        description: 'android12-5.10-2022-03'
+        description: 'Branch'
         required: true
-        default: 'VK-VI'
+        default: 'android12-5.10-2022-05'
       KERNEL_DEFCONFIG:
         description: 'Defconfig'
         required: true
